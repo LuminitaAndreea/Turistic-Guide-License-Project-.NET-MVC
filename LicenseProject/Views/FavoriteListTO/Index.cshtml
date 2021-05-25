@@ -1,0 +1,24 @@
+﻿@model LicenseProject.ViewModels.FavoriteCartTOViewModel
+
+<div class="container marginTop">
+    <div class= "row" >
+
+    <div class= "card" >
+    <tbody>
+        @foreach (var line in Model.FavoriteTuristicObjects)
+        {
+<div class="text-center view overlay hm-white-slight">
+    <img src="@line.TuristicObject.MainImage" class="img-fluid" alt="">
+    <a href="#">
+        <div class="mask waves-effect waves-light"></div>
+    </a>
+</div>
+     <div class="card-block">
+        <!--Title-->
+        <h4 class="card-title">@line.TuristicObject.Name</h4>
+
+     </div>}
+    </tbody>
+   </div >
+ </div >
+</div >
