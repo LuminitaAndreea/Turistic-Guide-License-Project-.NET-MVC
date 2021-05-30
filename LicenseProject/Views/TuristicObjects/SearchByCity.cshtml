@@ -1,0 +1,7 @@
+﻿@model LicenseProject.ViewModels.CityVM
+
+    @using (Html.BeginForm("SearchByCity", "TuristicObjects"))
+    {
+        @Html.TextBoxFor(m => m.CityName)
+        <button type="submit" class="btn btn-primary btn-block mb-4">Search</button>
+    }
