@@ -203,7 +203,7 @@ namespace LicenseProject.Controllers
             if (id == 0)
             {
                 restaurants = _context.Restaurants.OrderBy(n => n.RestaurantId).Where(r=>r.City==city).ToList();
-                currentCategory = "All restaurants";
+                currentCategory = "All restaurants in "+city;
             }
             else
             {

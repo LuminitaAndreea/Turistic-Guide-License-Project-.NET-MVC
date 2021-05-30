@@ -23,6 +23,8 @@ namespace LicenseProject.Areas.Identity.Pages.Account.Manage
         }
 
         public string Username { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
 
         [TempData]
         public string StatusMessage { get; set; }

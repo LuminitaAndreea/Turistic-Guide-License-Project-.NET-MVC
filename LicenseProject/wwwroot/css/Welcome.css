@@ -1,7 +1,16 @@
 ﻿
 @import url(https://fonts.googleapis.com/css?family=Lato:100,300,400,700);
 @import url(https://raw.github.com/FortAwesome/Font-Awesome/master/docs/assets/css/font-awesome.min.css);
+form-box {
+    margin: 50px 100px;
+    display: inline-block;
+    position: relative;
+    height: 60px;
+    float: right;
+    padding: 0;
+    position: relative;
 
+}
 body {
     background-image: url("https://hellojetlag.com/wp-content/uploads/2018/11/Burj-Khalifa-At-the-Top-Dubai-1-16-1024x687.jpg");
     color: #c2c2ac;
