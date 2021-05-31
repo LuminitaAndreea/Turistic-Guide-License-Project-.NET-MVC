@@ -60,7 +60,7 @@ namespace LicenseProject.Controllers
             }
             else
             {
-                return RedirectToAction("/Page/Identity/Account/Login");
+                return RedirectToAction("Login","Account");
             }
 
         }

@@ -179,6 +179,10 @@ namespace LicenseProject.Controllers
                 rate = reviews.Count() / sum;
             else
                 rate = 0;
+            restaurant.AverageRating = rate;
+            _context.Update(restaurant);
+            await _context.SaveChangesAsync();
+
             var restaurantVM = new RestaurantVM
             {
                 MainImage = restaurant.MainImage,

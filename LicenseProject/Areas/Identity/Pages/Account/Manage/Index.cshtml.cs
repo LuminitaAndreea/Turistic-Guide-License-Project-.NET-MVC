@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using LicenseProject.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -11,20 +12,22 @@ namespace LicenseProject.Areas.Identity.Pages.Account.Manage
 {
     public partial class IndexModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly Context context;
         public IndexModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager, Context context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            this.context = context;
         }
 
         public string Username { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string City { get; set; }
 
         [TempData]
         public string StatusMessage { get; set; }
@@ -39,10 +42,14 @@ namespace LicenseProject.Areas.Identity.Pages.Account.Manage
             public string PhoneNumber { get; set; }
         }
 
-        private async Task LoadAsync(IdentityUser user)
+        private async Task LoadAsync(ApplicationUser user)
         {
-            var userName = await _userManager.GetUserNameAsync(user);
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+            var userName = await _userManager.GetUserNameAsync((ApplicationUser)user);
+            var phoneNumber = await _userManager.GetPhoneNumberAsync((ApplicationUser)user);
+
+            FirstName = context.ApplicationUsers.First(u => u.UserName == userName).FirstName;
+            LastName = context.ApplicationUsers.First(u => u.UserName == userName).LastName;
+            City = context.ApplicationUsers.First(u => u.UserName == userName).City;
 
             Username = userName;
 

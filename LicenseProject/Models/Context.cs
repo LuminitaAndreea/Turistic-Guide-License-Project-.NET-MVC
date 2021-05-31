@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace LicenseProject.Models
 {
-    public class Context : IdentityDbContext<IdentityUser>
+    public class Context : IdentityDbContext<ApplicationUser>
     { 
         public Context(DbContextOptions<Context> options)
          : base(options)

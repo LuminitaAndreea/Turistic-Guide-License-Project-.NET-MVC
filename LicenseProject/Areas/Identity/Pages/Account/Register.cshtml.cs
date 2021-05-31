@@ -19,14 +19,14 @@ namespace LicenseProject.Areas.Identity.Pages.Account
     [AllowAnonymous]
     public class RegisterModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<RegisterModel> _logger;
         //private readonly IEmailSender _emailSender;
 
         public RegisterModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger
            // IEmailSender emailSender
             )
@@ -65,8 +65,8 @@ namespace LicenseProject.Areas.Identity.Pages.Account
             public string FirstName { get; set; }
             [Required]
             public string LastName { get; set; }
-            //[Required]
-            //public string City { get; set; }
+            [Required]
+            public string City { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -81,7 +81,7 @@ namespace LicenseProject.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email ,FirstName=Input.FirstName,LastName=Input.LastName};
+                var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email ,FirstName=Input.FirstName,LastName=Input.LastName,City=Input.City};
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {

@@ -1,7 +1,9 @@
-﻿@{
+﻿@model LicenseProject.ViewModels.HomeRecommenderLists
+@{
     ViewData["Title"] = "Home Page";
 }
-
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
 <!DOCTYPE html>
 <html>
 <head>
@@ -45,6 +47,33 @@
             </div>
         </div>
     </div>*@
+        @if (@HttpContextAccessor.HttpContext.User.Identity.Name != null)
+        {
+            <div class="row">
+                @{
+                    foreach (var item in Model.RestaurantsInCity)
+                    {
+                        @Html.Partial("RestaurantsSummary", item)
+                    }
+                }
+            </div>
+            <div class="row">
+                @{
+                    foreach (var item in Model.ClosestTuristicObjects)
+                    {
+                        @Html.Partial("TuristicObjectsSummary", item)
+                    }
+                }
+            </div>
+       }
+       <div class="row">
+        @{
+          foreach (var item in Model.TopTuristicObjects)
+          {
+           @Html.Partial("TuristicObjectsSummary", item)
+          }
+        }
+       </div>
 
 </body>
 </html>

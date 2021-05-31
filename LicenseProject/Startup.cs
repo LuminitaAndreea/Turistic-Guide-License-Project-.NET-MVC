@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,13 +30,16 @@ namespace LicenseProject
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<Context>();
-            var connection = @"Server=DESKTOP-PNVFDPI\MSSQLSERVER02;Database=Licenta;Trusted_Connection=True;ConnectRetryCount=0";
+            //services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<Context>();
+            services.AddDefaultIdentity<ApplicationUser>().AddEntityFrameworkStores<Context>();
+            services.AddIdentityCore<ApplicationUser>().AddRoles<IdentityRole > ().AddClaimsPrincipalFactory<UserClaimsPrincipalFactory<ApplicationUser,IdentityRole>>().AddEntityFrameworkStores<Context>();
+            var connection = @"Server=DESKTOP-PNVFDPI\MSSQLSERVER02;Database=LicentaProiect;Trusted_Connection=True;ConnectRetryCount=0";
             services.AddDbContext<Models.Context>
                 (options => options.UseSqlServer(connection));
             services.AddRazorPages();
             services.AddHttpContextAccessor();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
            // services.AddScoped(sp => FavoriteListRestaurants.GetCart(sp));
             services.AddSession();
            

@@ -24,6 +24,7 @@ namespace LicenseProject.Models
         public string Image3 { get; set; }
         public string Image4 { get; set; }
         public string Image5 { get; set; }
+        public int AverageRating { get; set; }
         public ICollection<Review> Reviews { get; set; }
         public ICollection<TuristicObjectCategory> TuristicObjectsCategories { get; set; }
     }

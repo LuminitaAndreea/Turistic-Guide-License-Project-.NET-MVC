@@ -178,6 +178,10 @@ namespace LicenseProject.Controllers
                 rate = reviews.Count() / sum;
             else
                 rate = 0;
+
+            TO.AverageRating = rate;
+            _context.Update(TO);
+            await _context.SaveChangesAsync();
             var VM = new TOVM
             {
                 MainImage = TO.MainImage,
