@@ -1,9 +1,11 @@
-﻿@model LicenseProject.ViewModels.HomeRecommenderLists
+﻿@model LicenseProject.ViewModels.RecommendationsViewModel
 @{
     ViewData["Title"] = "Home Page";
 }
+
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor HttpContextAccessor
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,38 +19,26 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-    <div class="text-center">
-        
-     @*   <div id="wrap">
-            <form action="" autocomplete="on">
-                <input id="search" name="search" type="text" placeholder="Find the city"><input id="search_submit" value="Rechercher" type="submit">
-            </form>
-        </div>*@
-        @*<div id="wrapper">
-            <div class="crd crd--effect-3">
-
-                <div class="crd-img"style='background-image: url("https://i.pinimg.com/564x/08/d5/9c/08d59c46ff8e8032dad90f41165fab8a.jpg")'></div>
-
-                <div class="crd-info">
-
-                    <p class="crd-text"asp-controller="Restaurants" asp-action="List" >Restaurants</p>
-                </div>
-
-            </div>
-            <div class="crd crd--effect-3">
-
-                <div class="crd-img" style='background-image: url("https://i.pinimg.com/564x/08/d5/9c/08d59c46ff8e8032dad90f41165fab8a.jpg")'></div>
-
-                <div class="crd-info">
-
-                    <p class="crd-text" asp-controller="TuristicObjects" asp-action="List">Places to Visit</p>
-                </div>
-
-            </div>
-        </div>
-    </div>*@
-        @if (@HttpContextAccessor.HttpContext.User.Identity.Name != null)
-        {
+@if (@HttpContextAccessor.HttpContext.User.Identity.Name != null){
+     @if (@Model.RestaurantRecommended.Count > 0)
+            {
+                for (int i = 0; i < @Model.RestaurantRecommended.Count; i++)
+                {
+                    
+                   @Model.RestaurantRecommended[i].Name<br /> <br />
+                               
+                }
+            } 
+        @if (@Model.TuristicObjectsRecommended.Count > 0)
+            {
+                for (int i = 0; i < @Model.TuristicObjectsRecommended.Count; i++)
+                {
+                    
+                   @Model.TuristicObjectsRecommended[i].Name<br /> <br />
+                               
+                }
+            } 
+            
             <div class="row">
                 @{
                     foreach (var item in Model.RestaurantsInCity)
@@ -65,7 +55,8 @@
                     }
                 }
             </div>
-       }
+        }
+   
        <div class="row">
         @{
           foreach (var item in Model.TopTuristicObjects)
@@ -74,6 +65,6 @@
           }
         }
        </div>
-
+       
 </body>
 </html>

@@ -1,4 +1,10 @@
+using BookloversApplication.Repositories;
 using LicenseProject.Models;
+using LicenseProject.Repositories;
+using LicenseProject.Repositories.Interfaces;
+using LicenseProject.Services;
+using LicenseProject.Wrapper;
+using LicenseProject.Wrapper.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -26,26 +32,41 @@ namespace LicenseProject
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            //services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<Context>();
-            services.AddDefaultIdentity<ApplicationUser>().AddEntityFrameworkStores<Context>();
-            services.AddIdentityCore<ApplicationUser>().AddRoles<IdentityRole > ().AddClaimsPrincipalFactory<UserClaimsPrincipalFactory<ApplicationUser,IdentityRole>>().AddEntityFrameworkStores<Context>();
-            var connection = @"Server=DESKTOP-PNVFDPI\MSSQLSERVER02;Database=LicentaProiect;Trusted_Connection=True;ConnectRetryCount=0";
+            
+            services.AddIdentity<ApplicationUser, IdentityRole<int>>().AddEntityFrameworkStores<Context>().AddDefaultTokenProviders();
+
+            var connection = @"Server=DESKTOP-PNVFDPI\MSSQLSERVER02;Database=Licenta;Trusted_Connection=True;ConnectRetryCount=0";
             services.AddDbContext<Models.Context>
                 (options => options.UseSqlServer(connection));
+
             services.AddRazorPages();
+
             services.AddHttpContextAccessor();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            
+            services.AddScoped<IProjectWrapper, ProjectWrapper>();
+            services.AddScoped<IRestaurantRepository, RestaurantRepository>();
+            services.AddScoped<IRestaurantService, RestaurantService>();
+            services.AddScoped<ITuristicObjectRepository, TuristicObjectRepository>();
+            services.AddScoped<ITuristicObjectService, TuristicObjectService>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IRestaurantCategoryRepository, RestaurantCategoryRepository>();
+            services.AddScoped<IRestaurantCategoryService, RestaurantCategoryService>();
+            services.AddScoped<ITuristicObjectCategoryRepository, TuristicObjectCategoryRepository>();
+            services.AddScoped<ITuristicObjectCategoryService, TuristicObjectCategoryService>();
+            services.AddScoped<IReviewRepository, ReviewRepository>();
+            services.AddScoped<IReviewService, ReviewService>();
+            services.AddScoped<IRestaurantRecommenderService, RestaurantRecommenderService>();
+            services.AddScoped<ITuristicObjectRecommenderService, TuristicObjectRecommenderService>();
 
-           // services.AddScoped(sp => FavoriteListRestaurants.GetCart(sp));
             services.AddSession();
            
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

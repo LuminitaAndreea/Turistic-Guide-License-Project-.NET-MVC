@@ -28,6 +28,7 @@ namespace LicenseProject.Areas.Identity.Pages.Account.Manage
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string City { get; set; }
+        public DateTime BirthDate { get; set; }
 
         [TempData]
         public string StatusMessage { get; set; }
@@ -50,6 +51,7 @@ namespace LicenseProject.Areas.Identity.Pages.Account.Manage
             FirstName = context.ApplicationUsers.First(u => u.UserName == userName).FirstName;
             LastName = context.ApplicationUsers.First(u => u.UserName == userName).LastName;
             City = context.ApplicationUsers.First(u => u.UserName == userName).City;
+            BirthDate= context.ApplicationUsers.First(u => u.UserName == userName).BirthDate;
 
             Username = userName;
 

@@ -1,4 +1,5 @@
 ﻿using LicenseProject.Models;
+using LicenseProject.Services;
 using LicenseProject.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Razor.Language;
@@ -13,10 +14,12 @@ namespace LicenseProject.Controllers
     public class FavoriteListRestaurantsController : Controller
     {
         private readonly Context _context;
+        private readonly IRestaurantService _restaurant;
 
-        public FavoriteListRestaurantsController(Context context)
+        public FavoriteListRestaurantsController(Context context,IRestaurantService restaurant)
         {
             _context = context;
+            _restaurant = restaurant;
         }
 
         public ViewResult Index()

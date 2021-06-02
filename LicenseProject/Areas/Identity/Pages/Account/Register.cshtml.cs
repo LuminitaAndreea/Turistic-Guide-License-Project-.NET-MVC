@@ -67,6 +67,8 @@ namespace LicenseProject.Areas.Identity.Pages.Account
             public string LastName { get; set; }
             [Required]
             public string City { get; set; }
+            [Required]
+            public DateTime BirthDate { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)

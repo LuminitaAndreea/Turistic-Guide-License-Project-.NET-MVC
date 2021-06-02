@@ -8,34 +8,42 @@ using LicenseProject.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.Infrastructure;
 using LicenseProject.ViewModels;
+using LicenseProject.Wrapper.Interfaces;
+using LicenseProject.Services;
 
 namespace LicenseProject.Controllers
 {
     public class TuristicObjectsController : Controller
     {
         private readonly Context _context;
-
-        public TuristicObjectsController(Context context)
+        private readonly ITuristicObjectService _turisticObject;
+        private readonly IProjectWrapper _wrapper;
+        private readonly IReviewService _review;
+        private readonly ICategoryService _category;
+        public TuristicObjectsController(ITuristicObjectService turisticObject, IReviewService review, ICategoryService category, IProjectWrapper wrapper, Context context)
         {
             _context = context;
+            _turisticObject = turisticObject;
+            _wrapper = wrapper;
+            _review = review;
+            _category = category;
         }
 
         // GET: TuristicObjects
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.TuristicObjects.ToListAsync());
+            return View( _turisticObject.Get());
         }
 
         // GET: TuristicObjects/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var turisticObject = await _context.TuristicObjects
-                .FirstOrDefaultAsync(m => m.TuristicObjectId == id);
+            var turisticObject = _turisticObject.GetTuristicObjectById(id);
             if (turisticObject == null)
             {
                 return NotFound();
@@ -55,26 +63,25 @@ namespace LicenseProject.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("TuristicObjectId,Name,VisitingPrice,Url,TelephoneNumber,ExactLocation,Program,City,Country,Description,MainImage,Image1,Image2,Image3,Image4,Image5")] TuristicObject turisticObject)
+        public IActionResult Create([Bind("TuristicObjectId,Name,VisitingPrice,Url,TelephoneNumber,ExactLocation,Program,City,Country,Description,MainImage,Image1,Image2,Image3,Image4,Image5")] TuristicObject turisticObject)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(turisticObject);
-                await _context.SaveChangesAsync();
+                _turisticObject.Create(turisticObject);
                 return RedirectToAction(nameof(Index));
             }
             return View(turisticObject);
         }
 
         // GET: TuristicObjects/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var turisticObject = await _context.TuristicObjects.FindAsync(id);
+            var turisticObject = _turisticObject.GetTuristicObjectById(id);
             if (turisticObject == null)
             {
                 return NotFound();
@@ -87,7 +94,7 @@ namespace LicenseProject.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("TuristicObjectId,Name,VisitingPrice,Url,TelephoneNumber,ExactLocation,Program,City,Country,Description,MainImage,Image1,Image2,Image3,Image4,Image5")] TuristicObject turisticObject)
+        public IActionResult Edit(int id, [Bind("TuristicObjectId,Name,VisitingPrice,Url,TelephoneNumber,ExactLocation,Program,City,Country,Description,MainImage,Image1,Image2,Image3,Image4,Image5")] TuristicObject turisticObject)
         {
             if (id != turisticObject.TuristicObjectId)
             {
@@ -98,8 +105,7 @@ namespace LicenseProject.Controllers
             {
                 try
                 {
-                    _context.Update(turisticObject);
-                    await _context.SaveChangesAsync();
+                    _turisticObject.Update(turisticObject);
                 }
                 catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
                 {
@@ -118,15 +124,14 @@ namespace LicenseProject.Controllers
         }
 
         // GET: TuristicObjects/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var turisticObject = await _context.TuristicObjects
-                .FirstOrDefaultAsync(m => m.TuristicObjectId == id);
+            var turisticObject = _turisticObject.GetTuristicObjectById(id);
             if (turisticObject == null)
             {
                 return NotFound();
@@ -138,27 +143,28 @@ namespace LicenseProject.Controllers
         // POST: TuristicObjects/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            var turisticObject = await _context.TuristicObjects.FindAsync(id);
-            _context.TuristicObjects.Remove(turisticObject);
-            await _context.SaveChangesAsync();
+            var turisticObject = _turisticObject.GetTuristicObjectById(id);
+            _turisticObject.Delete(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool TuristicObjectExists(int id)
         {
-            return _context.TuristicObjects.Any(e => e.TuristicObjectId == id);
+            if (_turisticObject.GetTuristicObjectById(id) != null)
+                return true;
+            else return false;
         }
-        public async Task<IActionResult> TuristicObjectInfo(int id)
+        public IActionResult TuristicObjectInfo(int id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-            var TO = _context.TuristicObjects.FirstOrDefault(m => m.TuristicObjectId == id);
+            var turisticObject = _turisticObject.GetTuristicObjectById(id);
 
-            if (TO == null)
+            if (turisticObject == null)
             {
                 return NotFound();
             }
@@ -170,27 +176,21 @@ namespace LicenseProject.Controllers
                 ViewBag.AlertClass = "alert alert-success alert-dismissible";
                 ViewBag.AlertVisibility = "";
             }
+            
+            var reviews = _review.GetAllTuristicObjects().Where(r => r.TuristicObject.TuristicObjectId == id && r.TuristicObject!=null).ToList();
+            var rate = reviews.Sum(r => r.Rate) / reviews.Count();
+            turisticObject.AverageRating = rate;
 
-            var reviews = _context.Reviews.Include(b => b.ApplicationUser).Where(r => r.TuristicObject.TuristicObjectId == id).ToList();
-            var sum = reviews.Sum(r => r.Rate);
-            int rate;
-            if (reviews.Count() != 0)
-                rate = reviews.Count() / sum;
-            else
-                rate = 0;
-
-            TO.AverageRating = rate;
-            _context.Update(TO);
-            await _context.SaveChangesAsync();
+            _turisticObject.Update(turisticObject);
             var VM = new TOVM
             {
-                MainImage = TO.MainImage,
-                TuristicObjectId = TO.TuristicObjectId,
-                Name = TO.Name,
-                City = TO.City,
+                MainImage = turisticObject.MainImage,
+                TuristicObjectId = turisticObject.TuristicObjectId,
+                Name = turisticObject.Name,
+                City = turisticObject.City,
                 Reviews = reviews,
-                TuristicObjectsCategories = TO.TuristicObjectsCategories,
-                AverageRating = rate
+                TuristicObjectsCategories = turisticObject.TuristicObjectsCategories,
+                AverageRating = turisticObject.AverageRating
 
             };
             return View(VM);
@@ -201,18 +201,18 @@ namespace LicenseProject.Controllers
             List<TuristicObject> turisticObjects;
             string currentCategory = string.Empty;
             var city = City.CityName;
-            int _category = id;
-            categories = _context.Categories.OrderBy(n => n.CategoryId).ToList();
+            int category = id;
+            categories = _category.Get().OrderBy(n => n.CategoryId).ToList();
             if (id == 0)
             {
-                turisticObjects = _context.TuristicObjects.OrderBy(n => n.TuristicObjectId).Where(r => r.City == city).ToList();
+                turisticObjects = _turisticObject.Get().OrderBy(n => n.TuristicObjectId).Where(r => r.City == city).ToList();
                 currentCategory = "All activities";
             }
             else
             {
-                if (_category == 1)
+                if (category == 1)
                 {
-                    turisticObjects = _context.TuristicObjects.Where(p => p.TuristicObjectsCategories.FirstOrDefault(c => c.CategoryId == 2).CategoryId == 2).Where(r => r.City == city).ToList();
+                    turisticObjects = _turisticObject.Get().Where(p => p.TuristicObjectsCategories.FirstOrDefault(c => c.CategoryId == 2).CategoryId == 2).Where(r => r.City == city).ToList();
                     currentCategory = "Outdoor ";
                 }
                 //else if (_category == 2)
@@ -234,7 +234,7 @@ namespace LicenseProject.Controllers
 
                 else
                 {
-                    turisticObjects = _context.TuristicObjects.Where(p => p.TuristicObjectsCategories.FirstOrDefault(c => c.CategoryId == 3).CategoryId == 3).Where(r => r.City == city).ToList();
+                    turisticObjects = _turisticObject.Get().Where(p => p.TuristicObjectsCategories.FirstOrDefault(c => c.CategoryId == 3).CategoryId == 3).Where(r => r.City == city).ToList();
                     currentCategory = "Cultural";
                 }
 

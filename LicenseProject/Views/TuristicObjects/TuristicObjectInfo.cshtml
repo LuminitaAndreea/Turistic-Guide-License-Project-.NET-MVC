@@ -104,7 +104,7 @@
     </div>
  }
  @if(@HttpContextAccessor.HttpContext.User.Identity.Name != null)
-@using (Html.BeginForm(actionName: "AddReview", controllerName: "Reviews", FormMethod.Post, htmlAttributes: new { onsubmit = "return VerifyRating()" }))
+@using (Html.BeginForm(actionName: "AddReviewTO", controllerName: "Reviews", FormMethod.Post, htmlAttributes: new { onsubmit = "return VerifyRating()" }))
 {
     <textarea rows="6" cols="50" name="comment" id="txtBookComment"></textarea>
     <div onmouseout="CRateSelected()">

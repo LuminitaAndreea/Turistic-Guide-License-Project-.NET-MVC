@@ -1,4 +1,5 @@
 ﻿using LicenseProject.Models;
+using LicenseProject.Services;
 using LicenseProject.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ namespace LicenseProject.Controllers
     public class FavoriteListTOController : Controller
     {
         private readonly Context _context;
+        private readonly ITuristicObjectService _turisticObject;
 
         public FavoriteListTOController(Context context)
         {

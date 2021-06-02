@@ -8,34 +8,42 @@ using Microsoft.EntityFrameworkCore;
 using LicenseProject.Models;
 using LicenseProject.ViewModels;
 using System.ComponentModel.Design.Serialization;
+using LicenseProject.Services;
+using LicenseProject.Wrapper.Interfaces;
 
 namespace LicenseProject.Controllers
 {
     public class RestaurantsController : Controller
     {
         private readonly Context _context;
+        private readonly IRestaurantService _restaurant;
+        private readonly IReviewService _review;
+        private readonly ICategoryService _category;
 
-        public RestaurantsController(Context context)
+        public RestaurantsController(IRestaurantService restaurant,IReviewService review ,ICategoryService category, Context context)
         {
+            _restaurant = restaurant;
+            _review = review;
+            _category = category;
             _context = context;
         }
 
         // GET: Restaurants
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Restaurants.ToListAsync());
+            return View(_restaurant.Get());
         }
 
         // GET: Restaurants/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var restaurant = await _context.Restaurants
-                .FirstOrDefaultAsync(m => m.RestaurantId == id);
+            var restaurant =  _restaurant.GetRestaurantById(id);
+                
             if (restaurant == null)
             {
                 return NotFound();
@@ -55,26 +63,25 @@ namespace LicenseProject.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("RestaurantId,Name,PriceRange,Program,Url,TelephoneNumber,ExactLocation,City,Country,MainImage,Image1,Image2,Image3,Image4,Image5")] Restaurant restaurant)
+        public IActionResult Create([Bind("RestaurantId,Name,PriceRange,Program,Url,TelephoneNumber,ExactLocation,City,Country,MainImage,Image1,Image2,Image3,Image4,Image5")] Restaurant restaurant)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(restaurant);
-                await _context.SaveChangesAsync();
+                _restaurant.Create(restaurant);
                 return RedirectToAction(nameof(Index));
             }
             return View(restaurant);
         }
 
         // GET: Restaurants/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var restaurant = await _context.Restaurants.FindAsync(id);
+            var restaurant = _restaurant.GetRestaurantById(id);
             if (restaurant == null)
             {
                 return NotFound();
@@ -87,7 +94,7 @@ namespace LicenseProject.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("RestaurantId,Name,PriceRange,Program,Url,TelephoneNumber,ExactLocation,City,Country,MainImage,Image1,Image2,Image3,Image4,Image5")] Restaurant restaurant)
+        public IActionResult Edit(int id, [Bind("RestaurantId,Name,PriceRange,Program,Url,TelephoneNumber,ExactLocation,City,Country,MainImage,Image1,Image2,Image3,Image4,Image5")] Restaurant restaurant)
         {
             if (id != restaurant.RestaurantId)
             {
@@ -98,8 +105,7 @@ namespace LicenseProject.Controllers
             {
                 try
                 {
-                    _context.Update(restaurant);
-                    await _context.SaveChangesAsync();
+                    _restaurant.Update(restaurant);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -118,15 +124,14 @@ namespace LicenseProject.Controllers
         }
 
         // GET: Restaurants/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var restaurant = await _context.Restaurants
-                .FirstOrDefaultAsync(m => m.RestaurantId == id);
+            var restaurant = _restaurant.GetRestaurantById(id);
             if (restaurant == null)
             {
                 return NotFound();
@@ -138,26 +143,27 @@ namespace LicenseProject.Controllers
         // POST: Restaurants/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            var restaurant = await _context.Restaurants.FindAsync(id);
-            _context.Restaurants.Remove(restaurant);
-            await _context.SaveChangesAsync();
+            var restaurant = _restaurant.GetRestaurantById(id);
+            _restaurant.Delete(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool RestaurantExists(int? id)
         {
-            return _context.Restaurants.Any(e => e.RestaurantId == id);
+            if (_restaurant.GetRestaurantById(id)!=null)
+                return true;
+            else return false;
         }
 
-        public async Task<IActionResult> RestaurantInfo(int id)
+        public IActionResult RestaurantInfo(int id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-            var restaurant = _context.Restaurants.FirstOrDefault(m => m.RestaurantId == id);
+            var restaurant = _restaurant.GetRestaurantById(id);
 
             if (restaurant == null)
             {
@@ -172,16 +178,15 @@ namespace LicenseProject.Controllers
                 ViewBag.AlertVisibility = "";
             }
 
-            var reviews = _context.Reviews.Include(b => b.ApplicationUser).Where(r=>r.Restaurant.RestaurantId==id).ToList();
-            var sum = reviews.Sum(r => r.Rate);
-            int rate;
-            if (reviews.Count() != 0)
-                rate = reviews.Count() / sum;
+            var reviews = _review.GetAllRestaurants().Where(r => r.Restaurant.RestaurantId == id && r.Restaurant != null).ToList();
+            if (reviews.Count > 0) { 
+
+                var rate = reviews.Sum(r => r.Rate) / reviews.Count();
+                restaurant.AverageRating = rate;
+                _restaurant.Update(restaurant);
+             }
             else
-                rate = 0;
-            restaurant.AverageRating = rate;
-            _context.Update(restaurant);
-            await _context.SaveChangesAsync();
+                restaurant.AverageRating = 0;
 
             var restaurantVM = new RestaurantVM
             {
@@ -191,9 +196,9 @@ namespace LicenseProject.Controllers
                 City = restaurant.City,
                 Reviews = reviews,
                 RestaurantsCategories = restaurant.RestaurantsCategories,
-                AverageRating = rate
+                AverageRating = restaurant.AverageRating
 
-             };
+            };
             return View(restaurantVM);
         }
         public IActionResult List(int id,CityVM City)
@@ -201,20 +206,20 @@ namespace LicenseProject.Controllers
             List<Category> categories;
             List<Restaurant> restaurants;
             string currentCategory = string.Empty;
-            int _category = id;
+            int category = id;
             var city = City.CityName;
-            categories = _context.Categories.OrderBy(n => n.CategoryId).ToList();
+            categories = _category.Get().OrderBy(n => n.CategoryId).ToList();
             if (id == 0)
             {
-                restaurants = _context.Restaurants.OrderBy(n => n.RestaurantId).Where(r=>r.City==city).ToList();
+                restaurants = _restaurant.Get().OrderBy(n => n.RestaurantId).Where(r=>r.City==city).ToList();
                 currentCategory = "All restaurants in "+city;
             }
             else
             {
-                if (_category == 1)
+                if (category == 1)
                 {
-                    restaurants = _context.Restaurants.Where(p => p.RestaurantsCategories.FirstOrDefault(c=>c.CategoryId==1).CategoryId==1).Where(r => r.City == city).ToList();
-                    currentCategory = "Bistro";
+                    restaurants = _restaurant.Get().Where(p => p.RestaurantsCategories.FirstOrDefault(c=>c.CategoryId==1).CategoryId==1).Where(r => r.City == city).ToList();
+                    currentCategory = "Greek";
                 }
                 //else if (_category == 2)
                 //{
@@ -235,7 +240,7 @@ namespace LicenseProject.Controllers
 
                 else
                 {
-                    restaurants = _context.Restaurants.Where(p => p.RestaurantsCategories.Equals(2)).Where(r => r.City == city).ToList();
+                    restaurants = _restaurant.Get().Where(p => p.RestaurantsCategories.Equals(2)).Where(r => r.City == city).ToList();
                     currentCategory = "Cookies and Sweets";
                 }
 
